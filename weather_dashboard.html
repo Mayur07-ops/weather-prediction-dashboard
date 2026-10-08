@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weather Prediction Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  .header { text-align: center; margin-bottom: 28px; }
+  .header h1 { font-size: 26px; font-weight: 700; color: #f1f5f9; letter-spacing: -0.5px; }
+  .header p { font-size: 13px; color: #64748b; margin-top: 4px; }
+  .badge {
+    display: inline-block; background: #1e3a5f; color: #7dd3fc;
+    font-size: 11px; padding: 2px 10px; border-radius: 999px;
+    margin-top: 8px; border: 1px solid #1d4ed8;
+  }
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px; margin-bottom: 24px;
+  }
+  .kpi-card {
+    background: #1e293b; border: 1px solid #334155; border-radius: 10px;
+    padding: 16px 18px; position: relative; overflow: hidden;
+  }
+  .kpi-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 3px; border-radius: 10px 10px 0 0;
+  }
+  .kpi-card.blue::before  { background: #3b82f6; }
+  .kpi-card.cyan::before  { background: #06b6d4; }
+  .kpi-card.violet::before { background: #8b5cf6; }
+  .kpi-card.emerald::before { background: #10b981; }
+  .kpi-card.amber::before  { background: #f59e0b; }
+  .kpi-card.rose::before   { background: #f43f5e; }
+  .kpi-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .kpi-value { font-size: 28px; font-weight: 700; color: #f1f5f9; line-height: 1; }
+  .kpi-sub   { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+  .charts-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;
+  }
+  .charts-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+  .chart-card {
+    background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 16px;
+  }
+  .chart-title    { font-size: 13px; font-weight: 600; color: #cbd5e1; margin-bottom: 4px; }
+  .chart-subtitle { font-size: 11px; color: #64748b; margin-bottom: 12px; }
+  .chart-box { width: 100%; }
+  .prediction-panel {
+    background: #1e293b; border: 1px solid #334155; border-radius: 10px;
+    padding: 20px; margin-bottom: 16px;
+  }
+  .prediction-title { font-size: 14px; font-weight: 600; color: #cbd5e1; margin-bottom: 16px; }
+  .pred-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+  .pred-item {
+    background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 14px;
+  }
+  .pred-item-label { font-size: 11px; color: #64748b; margin-bottom: 6px; }
+  .pred-item-value { font-size: 15px; font-weight: 600; color: #e2e8f0; }
+  .pred-bar-bg { height: 6px; background: #334155; border-radius: 3px; margin-top: 8px; overflow: hidden; }
+  .pred-bar-fill { height: 100%; border-radius: 3px; }
+  .accuracy-dial { text-align: center; padding: 10px 0; }
+  .accuracy-number { font-size: 42px; font-weight: 700; color: #10b981; line-height: 1; }
+  .accuracy-label { font-size: 11px; color: #64748b; margin-top: 4px; }
+  .insights-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+  .insight-pill {
+    background: #1e293b; border: 1px solid #334155; border-radius: 8px;
+    padding: 10px 16px; font-size: 12px; color: #94a3b8; flex: 1; min-width: 180px;
+  }
+  .insight-pill strong { color: #f1f5f9; display: block; font-size: 13px; margin-bottom: 2px; }
+  footer {
+    text-align: center; font-size: 11px; color: #475569;
+    margin-top: 28px; padding-top: 16px; border-top: 1px solid #1e293b;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>&#9729; Weather Prediction Dashboard</h1>
+  <p>Historical analysis &amp; rain prediction insights</p>
+  <span class="badge">366 days &middot; weather.csv</span>
+</div>
+
+<!-- KPI Cards -->
+<div class="kpi-grid">
+  <div class="kpi-card blue">
+    <div class="kpi-label">Avg Max Temp</div>
+    <div class="kpi-value">20.6&deg;</div>
+    <div class="kpi-sub">Peak: 35.8&deg;C</div>
+  </div>
+  <div class="kpi-card cyan">
+    <div class="kpi-label">Avg Min Temp</div>
+    <div class="kpi-value">7.3&deg;</div>
+    <div class="kpi-sub">Lowest: &minus;5.3&deg;C</div>
+  </div>
+  <div class="kpi-card violet">
+    <div class="kpi-label">Avg Humidity</div>
+    <div class="kpi-value">44.5%</div>
+    <div class="kpi-sub">3pm readings</div>
+  </div>
+  <div class="kpi-card emerald">
+    <div class="kpi-label">Rain Days</div>
+    <div class="kpi-value">66</div>
+    <div class="kpi-sub">18% of the year</div>
+  </div>
+  <div class="kpi-card amber">
+    <div class="kpi-label">Avg Rainfall</div>
+    <div class="kpi-value">1.43</div>
+    <div class="kpi-sub">mm per day</div>
+  </div>
+  <div class="kpi-card rose">
+    <div class="kpi-label">Avg Wind Gust</div>
+    <div class="kpi-value">39.7</div>
+    <div class="kpi-sub">km/h</div>
+  </div>
+</div>
+
+<!-- Insights -->
+<div class="insights-row">
+  <div class="insight-pill"><strong>&#127783; Wettest Period</strong>Month 1&ndash;2 (Jan&ndash;Feb): 95&ndash;101mm total rainfall</div>
+  <div class="insight-pill"><strong>&#127777; Hottest Period</strong>Month 3 (Mar): Avg max 29.1&deg;C</div>
+  <div class="insight-pill"><strong>&#10052; Coldest Period</strong>Month 9&ndash;10 (Sep&ndash;Oct): Avg min near 0&deg;C</div>
+  <div class="insight-pill"><strong>&#128168; Dominant Wind</strong>NW direction: 73 of 366 days (20%)</div>
+</div>
+
+<!-- Row 1 Charts -->
+<div class="charts-grid">
+  <div class="chart-card">
+    <div class="chart-title">Monthly Temperature Range</div>
+    <div class="chart-subtitle">Average max &amp; min temperatures by month</div>
+    <div class="chart-box" id="tempChart" style="height:240px"></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Monthly Rainfall &amp; Humidity</div>
+    <div class="chart-subtitle">Total rainfall (mm) and avg humidity (%)</div>
+    <div class="chart-box" id="rainChart" style="height:240px"></div>
+  </div>
+</div>
+
+<!-- Row 2 Charts -->
+<div class="charts-grid three">
+  <div class="chart-card">
+    <div class="chart-title">Max Temp Distribution</div>
+    <div class="chart-subtitle">Days per temperature band</div>
+    <div class="chart-box" id="tempDistChart" style="height:220px"></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Humidity Distribution</div>
+    <div class="chart-subtitle">Afternoon humidity readings</div>
+    <div class="chart-box" id="humDistChart" style="height:220px"></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Rain Today vs Tomorrow</div>
+    <div class="chart-subtitle">Yes / No outcome breakdown</div>
+    <div class="chart-box" id="rainPieChart" style="height:220px"></div>
+  </div>
+</div>
+
+<!-- Row 3 Charts -->
+<div class="charts-grid">
+  <div class="chart-card">
+    <div class="chart-title">Wind Gust Direction Frequency</div>
+    <div class="chart-subtitle">Top 8 wind gust directions (days)</div>
+    <div class="chart-box" id="windChart" style="height:240px"></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Cloud Cover Distribution</div>
+    <div class="chart-subtitle">Morning cloud cover (oktas 0&ndash;8)</div>
+    <div class="chart-box" id="cloudChart" style="height:240px"></div>
+  </div>
+</div>
+
+<!-- Prediction Panel -->
+<div class="prediction-panel">
+  <div class="prediction-title">&#129302; Rain Prediction Model &mdash; Naive Rule-Based</div>
+  <div class="pred-grid">
+    <div class="pred-item">
+      <div class="pred-item-label">Model Accuracy</div>
+      <div class="accuracy-dial">
+        <div class="accuracy-number">74.9%</div>
+        <div class="accuracy-label">correct on 366 days</div>
+      </div>
+    </div>
+    <div class="pred-item">
+      <div class="pred-item-label">Rain Tomorrow &mdash; YES</div>
+      <div class="pred-item-value">66 days (18%)</div>
+      <div class="pred-bar-bg"><div class="pred-bar-fill" style="width:18%;background:#3b82f6"></div></div>
+    </div>
+    <div class="pred-item">
+      <div class="pred-item-label">Rain Tomorrow &mdash; NO</div>
+      <div class="pred-item-value">300 days (82%)</div>
+      <div class="pred-bar-bg"><div class="pred-bar-fill" style="width:82%;background:#10b981"></div></div>
+    </div>
+    <div class="pred-item">
+      <div class="pred-item-label">Key Prediction Rule</div>
+      <div class="pred-item-value" style="font-size:12px;line-height:1.6;margin-top:4px">
+        If <strong style="color:#7dd3fc">Humidity 3pm &gt; 60%</strong><br>
+        OR <strong style="color:#7dd3fc">Rainfall &gt; 1mm</strong><br>
+        &rarr; Predict Rain Tomorrow
+      </div>
+    </div>
+    <div class="pred-item">
+      <div class="pred-item-label">Top Correlated Features</div>
+      <div style="margin-top:6px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#94a3b8;margin-bottom:4px"><span>Humidity 3pm</span><span>High</span></div>
+        <div class="pred-bar-bg" style="margin-bottom:8px"><div class="pred-bar-fill" style="width:88%;background:#8b5cf6"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#94a3b8;margin-bottom:4px"><span>Rainfall Today</span><span>High</span></div>
+        <div class="pred-bar-bg" style="margin-bottom:8px"><div class="pred-bar-fill" style="width:75%;background:#8b5cf6"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#94a3b8;margin-bottom:4px"><span>Cloud Cover</span><span>Medium</span></div>
+        <div class="pred-bar-bg"><div class="pred-bar-fill" style="width:55%;background:#8b5cf6"></div></div>
+      </div>
+    </div>
+    <div class="pred-item">
+      <div class="pred-item-label">Seasonal Rain Risk</div>
+      <div style="margin-top:6px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#94a3b8;margin-bottom:4px"><span>Summer (M1&ndash;M3)</span><span>High &middot; 23 days</span></div>
+        <div class="pred-bar-bg" style="margin-bottom:8px"><div class="pred-bar-fill" style="width:77%;background:#f59e0b"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#94a3b8;margin-bottom:4px"><span>Autumn (M4&ndash;M6)</span><span>Medium &middot; 17 days</span></div>
+        <div class="pred-bar-bg" style="margin-bottom:8px"><div class="pred-bar-fill" style="width:57%;background:#f59e0b"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#94a3b8;margin-bottom:4px"><span>Winter (M7&ndash;M9)</span><span>Low &middot; 12 days</span></div>
+        <div class="pred-bar-bg" style="margin-bottom:8px"><div class="pred-bar-fill" style="width:40%;background:#f59e0b"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#94a3b8;margin-bottom:4px"><span>Spring (M10&ndash;M12)</span><span>Low &middot; 14 days</span></div>
+        <div class="pred-bar-bg"><div class="pred-bar-fill" style="width:47%;background:#f59e0b"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>Made with IBM Bob &mdash; weather.csv &middot; 366 days of historical data</footer>
+
+<script>
+const border = '#334155', muted = '#64748b', text = '#e2e8f0';
+const blue = '#3b82f6', cyan = '#06b6d4', violet = '#8b5cf6';
+const amber = '#f59e0b', rose = '#f43f5e';
+
+const tip = { backgroundColor: '#1e293b', borderColor: border, textStyle: { color: text } };
+const legend = { textStyle: { color: muted }, itemWidth: 12, itemHeight: 12 };
+
+// 1. Monthly Temperature Range
+const tc = echarts.init(document.getElementById('tempChart'));
+tc.setOption({
+  backgroundColor: 'transparent',
+  tooltip: { ...tip, trigger: 'axis' },
+  legend: { ...legend, top: 0 },
+  grid: { top: 28, right: 20, bottom: 30, left: 40 },
+  xAxis: {
+    type: 'category',
+    data: ['M1','M2','M3','M4','M5','M6','M7','M8','M9','M10','M11','M12'],
+    axisLine: { lineStyle: { color: border } }, axisTick: { show: false },
+    axisLabel: { color: muted, fontSize: 11 }
+  },
+  yAxis: {
+    type: 'value', name: '°C',
+    nameTextStyle: { color: muted, fontSize: 10 },
+    splitLine: { lineStyle: { color: border, type: 'dashed' } },
+    axisLabel: { color: muted, fontSize: 11 }
+  },
+  series: [
+    { name: 'Max Temp', type: 'line', smooth: true, symbol: 'circle', symbolSize: 5,
+      data: [25.1,24.8,29.1,25.2,26.2,19.8,17.0,14.8,12.0,12.3,17.1,21.9],
+      lineStyle: { color: rose, width: 2.5 }, itemStyle: { color: rose },
+      areaStyle: { color: { type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(244,63,94,0.25)'},{offset:1,color:'rgba(244,63,94,0)'}] } }
+    },
+    { name: 'Min Temp', type: 'line', smooth: true, symbol: 'circle', symbolSize: 5,
+      data: [11.8,13.3,15.1,13.2,11.0,5.8,2.5,4.4,0.1,0.0,2.9,6.4],
+      lineStyle: { color: cyan, width: 2.5 }, itemStyle: { color: cyan },
+      areaStyle: { color: { type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(6,182,212,0.15)'},{offset:1,color:'rgba(6,182,212,0)'}] } }
+    }
+  ]
+});
+
+// 2. Monthly Rainfall & Humidity
+const rc = echarts.init(document.getElementById('rainChart'));
+rc.setOption({
+  backgroundColor: 'transparent',
+  tooltip: { ...tip, trigger: 'axis' },
+  legend: { ...legend, top: 0 },
+  grid: { top: 28, right: 55, bottom: 30, left: 45 },
+  xAxis: {
+    type: 'category',
+    data: ['M1','M2','M3','M4','M5','M6','M7','M8','M9','M10','M11','M12'],
+    axisLine: { lineStyle: { color: border } }, axisTick: { show: false },
+    axisLabel: { color: muted, fontSize: 11 }
+  },
+  yAxis: [
+    { type:'value', name:'mm', nameTextStyle:{color:muted,fontSize:10},
+      splitLine:{lineStyle:{color:border,type:'dashed'}}, axisLabel:{color:muted,fontSize:11} },
+    { type:'value', name:'%', nameTextStyle:{color:muted,fontSize:10}, min:0, max:100,
+      axisLabel:{color:muted,fontSize:11}, splitLine:{show:false} }
+  ],
+  series: [
+    { name:'Total Rainfall', type:'bar', yAxisIndex:0, barMaxWidth:18,
+      data:[95.4,101.0,38.6,59.4,40.4,17.2,12.8,22.0,42.6,15.0,44.8,33.6],
+      itemStyle:{ color:blue, borderRadius:[3,3,0,0] } },
+    { name:'Avg Humidity', type:'line', yAxisIndex:1, smooth:true, symbol:'circle', symbolSize:5,
+      data:[42.2,50.3,38.8,46.0,35.8,41.5,46.8,59.2,57.9,48.8,38.7,32.0],
+      lineStyle:{ color:violet, width:2 }, itemStyle:{ color:violet } }
+  ]
+});
+
+// 3. Max Temp Distribution
+const tdc = echarts.init(document.getElementById('tempDistChart'));
+tdc.setOption({
+  backgroundColor: 'transparent',
+  tooltip: { ...tip },
+  grid: { top: 10, right: 10, bottom: 44, left: 36 },
+  xAxis: {
+    type:'category', data:['≤10°','11–15°','16–20°','21–25°','26–30°','>30°'],
+    axisLine:{lineStyle:{color:border}}, axisTick:{show:false},
+    axisLabel:{color:muted,fontSize:10,rotate:20}
+  },
+  yAxis: { type:'value', splitLine:{lineStyle:{color:border,type:'dashed'}}, axisLabel:{color:muted,fontSize:11} },
+  series: [{
+    type:'bar', barMaxWidth:28,
+    data:[
+      {value:9,  itemStyle:{color:cyan}},
+      {value:83, itemStyle:{color:blue}},
+      {value:98, itemStyle:{color:violet}},
+      {value:78, itemStyle:{color:amber}},
+      {value:62, itemStyle:{color:'#f97316'}},
+      {value:36, itemStyle:{color:rose}}
+    ],
+    itemStyle:{ borderRadius:[4,4,0,0] },
+    label:{ show:true, position:'top', color:muted, fontSize:10 }
+  }]
+});
+
+// 4. Humidity Distribution
+const hdc = echarts.init(document.getElementById('humDistChart'));
+hdc.setOption({
+  backgroundColor: 'transparent',
+  tooltip: { ...tip },
+  grid: { top: 10, right: 10, bottom: 44, left: 36 },
+  xAxis: {
+    type:'category', data:['0–20%','21–40%','41–60%','61–80%','81–100%'],
+    axisLine:{lineStyle:{color:border}}, axisTick:{show:false},
+    axisLabel:{color:muted,fontSize:10,rotate:20}
+  },
+  yAxis: { type:'value', splitLine:{lineStyle:{color:border,type:'dashed'}}, axisLabel:{color:muted,fontSize:11} },
+  series: [{
+    type:'bar', barMaxWidth:36,
+    data:[20,143,140,51,12],
+    itemStyle:{ color:cyan, borderRadius:[4,4,0,0] },
+    label:{ show:true, position:'top', color:muted, fontSize:10 }
+  }]
+});
+
+// 5. Rain Pie
+const rpc = echarts.init(document.getElementById('rainPieChart'));
+rpc.setOption({
+  backgroundColor: 'transparent',
+  tooltip: { ...tip },
+  legend: { ...legend, bottom: 0 },
+  series: [{
+    type:'pie', radius:['40%','68%'], center:['50%','44%'],
+    label:{ show:false },
+    emphasis:{ label:{ show:true, fontSize:12, color:text, formatter:'{b}\n{c} days' } },
+    data:[
+      { value:66,  name:'Rain Today: Yes',     itemStyle:{color:blue} },
+      { value:300, name:'Rain Today: No',      itemStyle:{color:'#334155'} },
+      { value:66,  name:'Rain Tomorrow: Yes',  itemStyle:{color:violet} },
+      { value:300, name:'Rain Tomorrow: No',   itemStyle:{color:'#1e3a5f'} }
+    ]
+  }]
+});
+
+// 6. Wind Direction
+const wc = echarts.init(document.getElementById('windChart'));
+wc.setOption({
+  backgroundColor: 'transparent',
+  tooltip: { ...tip },
+  grid: { top: 10, right: 20, bottom: 10, left: 10, containLabel: true },
+  xAxis: { type:'value', splitLine:{lineStyle:{color:border,type:'dashed'}}, axisLabel:{color:muted,fontSize:11} },
+  yAxis: {
+    type:'category', data:['N','S','ESE','ENE','WNW','E','NNW','NW'],
+    axisLine:{show:false}, axisTick:{show:false}, axisLabel:{color:muted,fontSize:11}
+  },
+  series: [{
+    type:'bar', barMaxWidth:18,
+    data:[21,22,23,30,35,37,44,73],
+    itemStyle:{
+      color: function(p){ return [cyan,cyan,cyan,blue,blue,blue,violet,rose][p.dataIndex]; },
+      borderRadius:[0,4,4,0]
+    },
+    label:{ show:true, position:'right', color:muted, fontSize:10 }
+  }]
+});
+
+// 7. Cloud Cover
+const cc = echarts.init(document.getElementById('cloudChart'));
+cc.setOption({
+  backgroundColor: 'transparent',
+  tooltip: { ...tip },
+  grid: { top: 10, right: 20, bottom: 30, left: 45 },
+  xAxis: {
+    type:'category', data:['Clear (0–2)','Partly (3–5)','Overcast (6–8)'],
+    axisLine:{lineStyle:{color:border}}, axisTick:{show:false}, axisLabel:{color:muted,fontSize:11}
+  },
+  yAxis: {
+    type:'value', name:'Days', nameTextStyle:{color:muted,fontSize:10},
+    splitLine:{lineStyle:{color:border,type:'dashed'}}, axisLabel:{color:muted,fontSize:11}
+  },
+  series: [{
+    type:'bar', barMaxWidth:55,
+    data:[
+      {value:166, itemStyle:{color:amber}},
+      {value:49,  itemStyle:{color:blue}},
+      {value:151, itemStyle:{color:'#475569'}}
+    ],
+    itemStyle:{ borderRadius:[4,4,0,0] },
+    label:{ show:true, position:'top', color:muted, fontSize:11, formatter:'{c} days' }
+  }]
+});
+
+window.addEventListener('resize', () => {
+  [tc,rc,tdc,hdc,rpc,wc,cc].forEach(c => c.resize());
+});
+</script>
+</body>
+</html>
