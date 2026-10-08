@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Prediction Pipeline</title>
+
+  <!-- ECharts CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<div class="header">
+  <div class="header-left">
+    <h1>&#9881; Weather Prediction Pipeline</h1>
+    <p>Data ingestion &rarr; Feature engineering &rarr; Model scoring &rarr; Forecast output</p>
+  </div>
+  <div class="header-badges">
+    <span class="badge blue">366 records</span>
+    <span class="badge green">&#9679; Pipeline OK</span>
+    <span class="badge">weather.csv</span>
+  </div>
+</div>
+
+<!-- ── PIPELINE TRACK ── -->
+<div class="section-label">Pipeline Stages</div>
+<div class="pipeline">
+
+  <div class="pipe-stage">
+    <div class="pipe-node">
+      <div class="pipe-icon">&#128190;</div>
+      <div class="pipe-label">Data Ingestion</div>
+      <div class="pipe-sub">weather.csv</div>
+      <span class="pipe-badge done">&#10003; Done</span>
+    </div>
+    <div class="pipe-stage-label">Source</div>
+  </div>
+
+  <div class="pipe-arrow"><div class="pipe-line"></div><div class="pipe-chevron"></div></div>
+
+  <div class="pipe-stage">
+    <div class="pipe-node">
+      <div class="pipe-icon">&#128256;</div>
+      <div class="pipe-label">Preprocessing</div>
+      <div class="pipe-sub">Null handling, typing</div>
+      <span class="pipe-badge done">&#10003; Done</span>
+    </div>
+    <div class="pipe-stage-label">Clean</div>
+  </div>
+
+  <div class="pipe-arrow"><div class="pipe-line"></div><div class="pipe-chevron"></div></div>
+
+  <div class="pipe-stage">
+    <div class="pipe-node">
+      <div class="pipe-icon">&#128202;</div>
+      <div class="pipe-label">EDA</div>
+      <div class="pipe-sub">22 features analysed</div>
+      <span class="pipe-badge done">&#10003; Done</span>
+    </div>
+    <div class="pipe-stage-label">Explore</div>
+  </div>
+
+  <div class="pipe-arrow"><div class="pipe-line"></div><div class="pipe-chevron"></div></div>
+
+  <div class="pipe-stage">
+    <div class="pipe-node">
+      <div class="pipe-icon">&#9881;</div>
+      <div class="pipe-label">Feature Eng.</div>
+      <div class="pipe-sub">Humidity, Rain, Cloud</div>
+      <span class="pipe-badge done">&#10003; Done</span>
+    </div>
+    <div class="pipe-stage-label">Transform</div>
+  </div>
+
+  <div class="pipe-arrow"><div class="pipe-line"></div><div class="pipe-chevron"></div></div>
+
+  <div class="pipe-stage">
+    <div class="pipe-node">
+      <div class="pipe-icon">&#129302;</div>
+      <div class="pipe-label">Model Train</div>
+      <div class="pipe-sub">Rule-based classifier</div>
+      <span class="pipe-badge active">&#9679; Active</span>
+    </div>
+    <div class="pipe-stage-label">Train</div>
+  </div>
+
+  <div class="pipe-arrow"><div class="pipe-line"></div><div class="pipe-chevron"></div></div>
+
+  <div class="pipe-stage">
+    <div class="pipe-node">
+      <div class="pipe-icon">&#128270;</div>
+      <div class="pipe-label">Evaluation</div>
+      <div class="pipe-sub">Accuracy: 74.9%</div>
+      <span class="pipe-badge done">&#10003; Done</span>
+    </div>
+    <div class="pipe-stage-label">Evaluate</div>
+  </div>
+
+  <div class="pipe-arrow"><div class="pipe-line"></div><div class="pipe-chevron"></div></div>
+
+  <div class="pipe-stage">
+    <div class="pipe-node">
+      <div class="pipe-icon">&#127775;</div>
+      <div class="pipe-label">Forecast</div>
+      <div class="pipe-sub">Rain prediction output</div>
+      <span class="pipe-badge active">&#9679; Live</span>
+    </div>
+    <div class="pipe-stage-label">Output</div>
+  </div>
+
+</div>
+
+<!-- ── PIPELINE LOG ── -->
+<div class="section-label">Pipeline Log</div>
+<div class="log-card">
+  <div class="log-line"><span class="log-time">00:00:01</span><span class="log-tag ok">INFO</span><span class="log-msg">Loaded weather.csv &mdash; 366 rows &times; 22 columns</span></div>
+  <div class="log-line"><span class="log-time">00:00:02</span><span class="log-tag warn">WARN</span><span class="log-msg">3 NA values found in Sunshine column &mdash; imputed with column median</span></div>
+  <div class="log-line"><span class="log-time">00:00:03</span><span class="log-tag ok">INFO</span><span class="log-msg">Preprocessing complete &mdash; 0 nulls remaining</span></div>
+  <div class="log-line"><span class="log-time">00:00:04</span><span class="log-tag info">EDA</span><span class="log-msg">Feature correlation: Humidity3pm (0.88), Rainfall (0.75), Cloud9am (0.55)</span></div>
+  <div class="log-line"><span class="log-time">00:00:05</span><span class="log-tag ok">INFO</span><span class="log-msg">Rule fitted: IF Humidity3pm &gt; 60 OR Rainfall &gt; 1 THEN RainTomorrow=Yes</span></div>
+  <div class="log-line"><span class="log-time">00:00:06</span><span class="log-tag ok">INFO</span><span class="log-msg">Evaluation complete &mdash; Accuracy 74.9% | Rain=Yes 66 | Rain=No 300</span></div>
+  <div class="log-line"><span class="log-time">00:00:07</span><span class="log-tag info">OUT</span><span class="log-msg">Forecast pipeline running &mdash; outputs ready for downstream consumers</span></div>
+</div>
+
+<!-- ── STAGE 1: DATA SUMMARY ── -->
+<div class="section-label">Stage 1 &mdash; Data Summary</div>
+<div class="kpi-row">
+  <div class="kpi-card blue">
+    <div class="kpi-label">Avg Max Temp</div>
+    <div class="kpi-value">20.6&deg;</div>
+    <div class="kpi-sub">Peak 35.8&deg;C</div>
+  </div>
+  <div class="kpi-card cyan">
+    <div class="kpi-label">Avg Min Temp</div>
+    <div class="kpi-value">7.3&deg;</div>
+    <div class="kpi-sub">Low &minus;5.3&deg;C</div>
+  </div>
+  <div class="kpi-card violet">
+    <div class="kpi-label">Avg Humidity</div>
+    <div class="kpi-value">44.5%</div>
+    <div class="kpi-sub">3pm readings</div>
+  </div>
+  <div class="kpi-card emerald">
+    <div class="kpi-label">Rain Days</div>
+    <div class="kpi-value">66</div>
+    <div class="kpi-sub">18% of year</div>
+  </div>
+  <div class="kpi-card amber">
+    <div class="kpi-label">Avg Rainfall</div>
+    <div class="kpi-value">1.43</div>
+    <div class="kpi-sub">mm per day</div>
+  </div>
+  <div class="kpi-card rose">
+    <div class="kpi-label">Avg Wind Gust</div>
+    <div class="kpi-value">39.7</div>
+    <div class="kpi-sub">km/h</div>
+  </div>
+</div>
+
+<!-- ── STAGE 2: EDA CHARTS ── -->
+<div class="section-label">Stage 2 &mdash; Exploratory Analysis</div>
+<div class="grid-2">
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">Monthly Temperature Range</div>
+      <span class="chart-tag">EDA</span>
+    </div>
+    <div class="chart-sub">Avg max &amp; min &deg;C per month</div>
+    <div id="tempChart" style="height:220px"></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">Monthly Rainfall &amp; Humidity</div>
+      <span class="chart-tag">EDA</span>
+    </div>
+    <div class="chart-sub">Total rainfall (mm) vs avg humidity (%)</div>
+    <div id="rainChart" style="height:220px"></div>
+  </div>
+</div>
+
+<div class="grid-3">
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">Max Temp Distribution</div>
+      <span class="chart-tag">Feature</span>
+    </div>
+    <div class="chart-sub">Days per &deg;C band</div>
+    <div id="tempDistChart" style="height:200px"></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">Humidity Distribution</div>
+      <span class="chart-tag">Feature</span>
+    </div>
+    <div class="chart-sub">Afternoon humidity readings</div>
+    <div id="humDistChart" style="height:200px"></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">Cloud Cover</div>
+      <span class="chart-tag">Feature</span>
+    </div>
+    <div class="chart-sub">Morning oktas 0&ndash;8</div>
+    <div id="cloudChart" style="height:200px"></div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">Wind Gust Direction</div>
+      <span class="chart-tag">Feature</span>
+    </div>
+    <div class="chart-sub">Top 8 directions by frequency</div>
+    <div id="windChart" style="height:220px"></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">Rain Today vs Tomorrow</div>
+      <span class="chart-tag">Target</span>
+    </div>
+    <div class="chart-sub">Yes / No outcome distribution</div>
+    <div id="rainPieChart" style="height:220px"></div>
+  </div>
+</div>
+
+<!-- ── STAGE 3: MODEL & EVALUATION ── -->
+<div class="section-label">Stage 3 &mdash; Model &amp; Evaluation</div>
+<div class="model-card">
+  <div class="model-header">
+    <div>
+      <div class="model-title">&#129302; Rain Prediction Model &mdash; Naive Rule-Based Classifier</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px">
+        Rule: IF Humidity3pm &gt; 60% OR Rainfall &gt; 1mm &rarr; RainTomorrow = Yes
+      </div>
+    </div>
+    <div style="text-align:right">
+      <div class="model-acc">74.9%</div>
+      <div class="model-acc-sub">accuracy &middot; 366 samples</div>
+    </div>
+  </div>
+
+  <div class="model-grid">
+    <div class="model-stat">
+      <div class="model-stat-label">True Positives</div>
+      <div class="model-stat-value" style="color:var(--emerald)">~49</div>
+    </div>
+    <div class="model-stat">
+      <div class="model-stat-label">True Negatives</div>
+      <div class="model-stat-value" style="color:var(--emerald)">~225</div>
+    </div>
+    <div class="model-stat">
+      <div class="model-stat-label">False Positives</div>
+      <div class="model-stat-value" style="color:var(--rose)">~75</div>
+    </div>
+    <div class="model-stat">
+      <div class="model-stat-label">False Negatives</div>
+      <div class="model-stat-value" style="color:var(--amber)">~17</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:16px">
+    <div>
+      <div style="font-size:11px;font-weight:600;color:var(--dim);margin-bottom:10px">Feature Importance</div>
+      <!-- Generated by python/model.py → results.json -->
+      <div id="featureImportance"></div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;color:var(--dim);margin-bottom:10px">Seasonal Rain Risk</div>
+      <!-- Generated by python/model.py → results.json -->
+      <div class="season-grid" id="seasonalRisk"></div>
+    </div>
+  </div>
+</div>
+
+<footer>Made with IBM Bob &mdash; weather.csv &middot; 366 days &middot; 22 features</footer>
+
+<!-- Data must load before charts -->
+<script src="js/weatherData.js"></script>
+<script src="js/charts.js"></script>
+<!-- Model logic: run python/model.py to generate results.json -->
+
+</body>
+</html>
